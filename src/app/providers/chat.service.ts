@@ -71,7 +71,14 @@ export class ChatService {
      */
     login(proveedor: string) {
         /*por defecto tra la autenticacion por google */
-        this.afAuth.auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
+        if (proveedor === 'google') {
+            this.afAuth.auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
+        }
+
+        if (proveedor === 'twitter') {
+            this.afAuth.auth.signInWithPopup(new firebase.auth.TwitterAuthProvider());
+        }
+
     }
 
     /**
