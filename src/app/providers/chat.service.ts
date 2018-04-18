@@ -2,14 +2,37 @@ import { Injectable } from '@angular/core';
 import { AngularFirestore, AngularFirestoreCollection } from 'angularfire2/firestore';
 import { Mensaje } from './../interfaces/mensaje.interface';
 
+import { AngularFireAuth } from 'angularfire2/auth';
+import * as firebase from 'firebase/app';
+
 @Injectable()
 export class ChatService {
 
     private itemsCollection: AngularFirestoreCollection<Mensaje>;
     public chats: Mensaje[] = [];
+    public usuario: any = {};
 
 
-    constructor(private afs: AngularFirestore) { }
+    constructor(
+        private afs: AngularFirestore,
+        public afAuth: AngularFireAuth
+    ) {
+
+        /*nos subcribimos a un observable de angularFireAut
+        para escuchar cualqueir cambio en el estado de la autenticacion*/
+        this.afAuth.authState.subscribe(user => {
+            console.log('Estado del usuario: ', user);
+
+            if (!user) {
+                return;
+            }
+
+            this.usuario.nombre = user.displayName;
+            this.usuario.uid = user.uid;
+
+        });
+
+    }
 
     cargarMensajes() {
         /*indicamos una query con el ref para que ordene por fecha ascendente y limite el get a 5 datos */
@@ -40,6 +63,23 @@ export class ChatService {
         /*Con esto le decimos que inserte un mensaje a la collecion chats */
         /*Esto retorna una promesa para vlaidar si se inserto o fallo con then o catch*/
         return this.itemsCollection.add(mensaje);
+    }
+
+    /**
+     * Funcion para hacer login en la app
+     * @memberof ChatService.login
+     */
+    login(proveedor: string) {
+        /*por defecto tra la autenticacion por google */
+        this.afAuth.auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
+    }
+
+    /**
+     * funcion para cerrar session en la app
+     * @memberof ChatService.logout
+     */
+    logout() {
+        this.afAuth.auth.signOut();
     }
 
 }
